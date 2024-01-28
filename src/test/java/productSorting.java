@@ -5,23 +5,17 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.Select;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 public class productSorting {
     WebDriver driver;
-
     List<WebElement> actualSortingOptionList = new ArrayList<>();
-
     WebElement inventoryList;
-    List<String> initialInventoryProductsText = new ArrayList<>();
-    List<String> initialInventoryProductsPriceText = new ArrayList<>();
-    List<String> initialInventoryProductsTextList = new ArrayList<>();
+    List<String> expectedProductNamesList = new ArrayList<>();
+    List<Double> expectedProductsPriceList = new ArrayList<>();
     Select select;
-
 
     @BeforeEach
     public void initializeChromedriver() {
@@ -32,21 +26,22 @@ public class productSorting {
         driver.findElement(By.id("password")).sendKeys("secret_sauce");
         driver.findElement(By.xpath("//*[@id=\"login-button\"]")).click();
 
-        WebElement sortingElement = driver.findElement(By.className("product_sort_container")); //finds webelement with classname "product_sort_container"
-        select = new Select(sortingElement); //create objects of Select class
-        List<WebElement> actualSortingOptionList = select.getOptions();
-        inventoryList = driver.findElement(By.className("inventory_list")); //Find parent element of the products list
+        WebElement sortingElement = driver.findElement(By.className("product_sort_container")); 
+        select = new Select(sortingElement); 
+        actualSortingOptionList = select.getOptions();
+        inventoryList = driver.findElement(By.className("inventory_list"));
         List<WebElement> initialInventoryProducts = inventoryList.findElements(By.xpath("//div[contains(@class, 'inventory_item_label')]")); //moja poczatkowa lista produktów w defaultowej kolejności
-        initialInventoryProductsText = new ArrayList<>(); //Initialize list of product names that will be sorted
+        expectedProductNamesList = new ArrayList<>(); //Initialize list of product names that will be sorted
         for (WebElement product : initialInventoryProducts) { //add product names to the list
             String productText = product.getText();
-            initialInventoryProductsText.add(productText);
+            expectedProductNamesList.add(productText);
         }
         List<WebElement> initialInventoryProductsPriceObjectList = inventoryList.findElements(By.xpath("//div[contains(@class, 'inventory_item_price')]")); //moja poczatkowa lista produktów w defaultowej kolejności
-        initialInventoryProductsPriceText = new ArrayList<>(); //Initialize list of product names that will be sorted
+        expectedProductsPriceList = new ArrayList<>(); //Initialize list of product names that will be sorted
         for (WebElement product : initialInventoryProductsPriceObjectList) { //add product names to the list
-            String productText = product.getText();
-            initialInventoryProductsPriceText.add(productText);
+            String productText = product.getText().substring(1);
+            double productPrice = Double.parseDouble(productText);
+            expectedProductsPriceList.add(productPrice);
         }
 
     }
@@ -65,7 +60,7 @@ public class productSorting {
     }
     @Test
     public void ascendingNameSorting() {
-        Collections.sort(initialInventoryProductsText);
+        Collections.sort(expectedProductNamesList);
         select.selectByVisibleText("Name (A to Z)");
 
         List<WebElement> sortedProducts = inventoryList.findElements(By.xpath("//div[contains(@class, 'inventory_item_label')]"));
@@ -74,11 +69,12 @@ public class productSorting {
             String sortedProductText = sortedProduct.getText();
             sortedProductsTextList.add(sortedProductText);
         }
-        Assertions.assertEquals(initialInventoryProductsText, sortedProductsTextList);
+        Assertions.assertEquals(expectedProductNamesList, sortedProductsTextList);
+        System.out.println();
     }
     @Test
     public void descendingNameSorting(){
-        Collections.sort(initialInventoryProductsText, Collections.reverseOrder());
+        Collections.sort(expectedProductNamesList, Collections.reverseOrder());
         select.selectByVisibleText("Name (Z to A)");
         List<WebElement> sortedProducts = inventoryList.findElements(By.xpath("//div[contains(@class, 'inventory_item_label')]"));
         List<String> sortedProductsTextList = new ArrayList<>();
@@ -86,9 +82,34 @@ public class productSorting {
             String sortedProductText = sortedProduct.getText();
             sortedProductsTextList.add(sortedProductText);
         }
-        Assertions.assertEquals(initialInventoryProductsText, sortedProductsTextList);
+        Assertions.assertEquals(expectedProductNamesList, sortedProductsTextList);
     }
-
+    @Test
+    public void ascendingPriceSorting(){
+        Collections.sort(expectedProductsPriceList);
+        select.selectByVisibleText("Price (low to high)");
+        List<WebElement> sortedProducts = inventoryList.findElements(By.xpath("//div[contains(@class, 'inventory_item_price')]"));
+        List<Double> sortedProductsTextList = new ArrayList<>();
+        for (WebElement sortedProduct : sortedProducts) {
+            String sortedProductText = sortedProduct.getText().substring(1);
+            double productPrice = Double.parseDouble(sortedProductText);
+            sortedProductsTextList.add(productPrice);
+        }
+        Assertions.assertEquals(expectedProductsPriceList, sortedProductsTextList);
+    }
+    @Test
+    public void descendingPriceSorting(){
+        Collections.sort(expectedProductsPriceList, Collections.reverseOrder());
+        select.selectByVisibleText("Price (high to low)");
+        List<WebElement> sortedProducts = inventoryList.findElements(By.xpath("//div[contains(@class, 'inventory_item_price')]"));
+        List<Double> sortedProductsTextList = new ArrayList<>();
+        for (WebElement sortedProduct : sortedProducts) {
+            String sortedProductText = sortedProduct.getText().substring(1);
+            double productPrice = Double.parseDouble(sortedProductText);
+            sortedProductsTextList.add(productPrice);
+        }
+        Assertions.assertEquals(expectedProductsPriceList, sortedProductsTextList);
+    }
 
 }
 
