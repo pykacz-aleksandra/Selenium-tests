@@ -8,6 +8,8 @@ import org.openqa.selenium.support.ui.Select;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class productSorting {
     WebDriver driver;
@@ -89,27 +91,23 @@ public class productSorting {
         Collections.sort(expectedProductsPriceList);
         select.selectByVisibleText("Price (low to high)");
         List<WebElement> sortedProducts = inventoryList.findElements(By.xpath("//div[contains(@class, 'inventory_item_price')]"));
-        List<Double> sortedProductsTextList = new ArrayList<>();
-        for (WebElement sortedProduct : sortedProducts) {
-            String sortedProductText = sortedProduct.getText().substring(1);
-            double productPrice = Double.parseDouble(sortedProductText);
-            sortedProductsTextList.add(productPrice);
-        }
-        Assertions.assertEquals(expectedProductsPriceList, sortedProductsTextList);
+        List<Double> sortedProductsPriceList = sortedProducts.stream()
+                .map(price -> Double.parseDouble(price.getText().substring(1)))
+                .collect(Collectors.toList());
+        Assertions.assertEquals(expectedProductsPriceList, sortedProductsPriceList);
     }
+
     @Test
     public void descendingPriceSorting(){
         Collections.sort(expectedProductsPriceList, Collections.reverseOrder());
         select.selectByVisibleText("Price (high to low)");
         List<WebElement> sortedProducts = inventoryList.findElements(By.xpath("//div[contains(@class, 'inventory_item_price')]"));
-        List<Double> sortedProductsTextList = new ArrayList<>();
-        for (WebElement sortedProduct : sortedProducts) {
-            String sortedProductText = sortedProduct.getText().substring(1);
-            double productPrice = Double.parseDouble(sortedProductText);
-            sortedProductsTextList.add(productPrice);
-        }
-        Assertions.assertEquals(expectedProductsPriceList, sortedProductsTextList);
+        List<Double> sortedProductsPriceList = sortedProducts.stream()
+                .map(price -> Double.parseDouble(price.getText().substring(1)))
+                .collect(Collectors.toList());
+        Assertions.assertEquals(expectedProductsPriceList, sortedProductsPriceList);
     }
 
 }
+
 
